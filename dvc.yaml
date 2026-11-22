@@ -1,4 +1,14 @@
 stages:
+  unpack_raw:
+    cmd: python scripts/unpack_raw.py
+    deps:
+      - data/raw_zips
+      - scripts/unpack_raw.py
+    outs:
+      - data/raw:
+          cache: false
+          persist: true
+
   validate_raw:
     cmd: python -m src.validate_raw
     deps:

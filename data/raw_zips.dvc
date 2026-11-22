@@ -1,0 +1,6 @@
+outs:
+- md5: 4d5b9121fe70b62e9072c7b7ac03ff7a.dir
+  size: 857701064
+  nfiles: 60
+  hash: md5
+  path: raw_zips
