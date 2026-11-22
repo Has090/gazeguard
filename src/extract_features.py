@@ -5,7 +5,7 @@ import cv2
 import pandas as pd
 
 from src.common import (FEATURES, ROOT, largest_box_class, list_images, list_scenarios,
-                        load_params, parse_frame_idx, read_yolo_annotation)
+                        load_params, parse_frame_idx, read_yolo_annotation, sequence_id)
 from src.features import EMPTY, landmarks_to_features
 
 
@@ -47,6 +47,7 @@ def main():
                 feats = dict(EMPTY)
             rows.append({
                 "scenario": scen.name,
+                "sequence": sequence_id(img_path.stem),   # recording inside the scenario folder
                 "frame_idx": parse_frame_idx(img_path.stem),
                 "image": f"{scen.name}/{img_path.name}",
                 "label": frame_label(img_path, scen.name, params),
@@ -54,7 +55,9 @@ def main():
             })
         print(f"[extract_features] {scen.name}: {len(images)} frames", flush=True)
 
-    df = pd.DataFrame(rows).sort_values(["scenario", "frame_idx"]).reset_index(drop=True)
+    df = (pd.DataFrame(rows)
+          .sort_values(["scenario", "sequence", "frame_idx"])
+          .reset_index(drop=True))
     out = ROOT / "data" / "processed" / "features.csv"
     out.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(out, index=False)

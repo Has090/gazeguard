@@ -1,0 +1,29 @@
+{
+  "passed": true,
+  "failures": [],
+  "n_scenarios": 60,
+  "n_images": 15051,
+  "n_missing_annotation": 0,
+  "missing_annotation_rate": 0.0,
+  "n_corrupt_images": 0,
+  "corrupt_image_rate": 0.0,
+  "n_bad_annotation_entries": 0,
+  "n_unparsable_frame_numbers": 0,
+  "n_duplicate_frame_numbers": 0,
+  "class_ids_seen": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+  ],
+  "first_errors": []
+}

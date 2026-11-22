@@ -6,3 +6,4 @@ mlruns/
 .env
 *.log
 /data/raw/
+push.log

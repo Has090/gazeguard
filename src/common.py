@@ -20,6 +20,7 @@ VELOCITY_FEATURES = ["d_yaw", "d_pitch"]
 WINDOW_FEATURES = FEATURES + VELOCITY_FEATURES
 
 _FRAME_RE = re.compile(r"(\d+)$")
+_SEQ_RE = re.compile(r"^(.*?)\d+$")
 
 
 def load_params(path=None):
@@ -52,6 +53,13 @@ def parse_frame_idx(stem: str):
     """'S1_00000264' -> 264 (trailing digits of the file name), else None."""
     m = _FRAME_RE.search(stem)
     return int(m.group(1)) if m else None
+
+
+def sequence_id(stem: str) -> str:
+    """'S2C_00000264' -> 'S2C_'. The prefix identifies the recording a frame belongs to;
+    every recording inside a scenario folder is numbered from 0 on its own."""
+    m = _SEQ_RE.match(stem)
+    return m.group(1) if m else stem
 
 
 def read_yolo_annotation(path):

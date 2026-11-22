@@ -1,0 +1,217 @@
+schema: '2.0'
+stages:
+  unpack_raw:
+    cmd: python scripts/unpack_raw.py
+    deps:
+    - path: data/raw_zips
+      hash: md5
+      md5: 72e9688f627c69d0bdc82c4091fa1fff.dir
+      size: 854660916
+      nfiles: 60
+    - path: scripts/unpack_raw.py
+      hash: md5
+      md5: 6aea4b590d6fd45d3ecfeb65d01d3562
+      size: 224
+    outs:
+    - path: data/raw
+      hash: md5
+      md5: 973a7caa8c0177e4aa6c82b0be8c5494.dir
+      size: 853757536
+      nfiles: 30102
+  validate_raw:
+    cmd: python -m src.validate_raw
+    deps:
+    - path: data/raw
+      hash: md5
+      md5: 973a7caa8c0177e4aa6c82b0be8c5494.dir
+      size: 853757536
+      nfiles: 30102
+    - path: src/common.py
+      hash: md5
+      md5: 48f43240af39ccd3712fb2919f02ea0c
+      size: 3291
+    - path: src/validate_raw.py
+      hash: md5
+      md5: 83c69e525846d3a87afbde1cd491df4f
+      size: 4271
+    params:
+      params.yaml:
+        data:
+          raw_dir: data/raw
+          image_exts:
+          - .jpg
+          - .jpeg
+          - .png
+          num_classes: 13
+        validation:
+          min_scenarios: 3
+          max_missing_annotation_rate: 0.05
+          max_corrupt_image_rate: 0.0
+          min_face_detect_rate: 0.5
+          min_labeled_rate: 0.9
+    outs:
+    - path: reports/raw_validation.json
+      hash: md5
+      md5: 83dff62afacfed9ae8c3e55c1f448dff
+      size: 469
+  extract_features:
+    cmd: python -m src.extract_features
+    deps:
+    - path: data/raw
+      hash: md5
+      md5: 973a7caa8c0177e4aa6c82b0be8c5494.dir
+      size: 853757536
+      nfiles: 30102
+    - path: reports/raw_validation.json
+      hash: md5
+      md5: 83dff62afacfed9ae8c3e55c1f448dff
+      size: 469
+    - path: src/common.py
+      hash: md5
+      md5: 48f43240af39ccd3712fb2919f02ea0c
+      size: 3291
+    - path: src/extract_features.py
+      hash: md5
+      md5: 3a5500d17a7b1c4e727ab8461e6a39a7
+      size: 2708
+    - path: src/features.py
+      hash: md5
+      md5: 4d034ab3c62cb6932337ee45b1c43402
+      size: 3507
+    params:
+      params.yaml:
+        data:
+          raw_dir: data/raw
+          image_exts:
+          - .jpg
+          - .jpeg
+          - .png
+          num_classes: 13
+        extract:
+          max_num_faces: 1
+          min_detection_confidence: 0.5
+        labels:
+          source: annotation_largest_box
+          folder_map: {}
+    outs:
+    - path: data/processed/features.csv
+      hash: md5
+      md5: 92cb44e745b693c73d16f0bf34a56ede
+      size: 3902102
+  validate_processed:
+    cmd: python -m src.validate_processed
+    deps:
+    - path: data/processed/features.csv
+      hash: md5
+      md5: 92cb44e745b693c73d16f0bf34a56ede
+      size: 3902102
+    - path: src/common.py
+      hash: md5
+      md5: 48f43240af39ccd3712fb2919f02ea0c
+      size: 3291
+    - path: src/validate_processed.py
+      hash: md5
+      md5: 5e557d8d7b2a1d1f1273b8e8dfb06fd3
+      size: 3356
+    params:
+      params.yaml:
+        validation:
+          min_scenarios: 3
+          max_missing_annotation_rate: 0.05
+          max_corrupt_image_rate: 0.0
+          min_face_detect_rate: 0.5
+          min_labeled_rate: 0.9
+    outs:
+    - path: reports/processed_validation.json
+      hash: md5
+      md5: 60b209421655be7a2e09be4ce68bb101
+      size: 296
+  make_windows:
+    cmd: python -m src.make_windows
+    deps:
+    - path: data/processed/features.csv
+      hash: md5
+      md5: 92cb44e745b693c73d16f0bf34a56ede
+      size: 3902102
+    - path: reports/processed_validation.json
+      hash: md5
+      md5: 60b209421655be7a2e09be4ce68bb101
+      size: 296
+    - path: src/common.py
+      hash: md5
+      md5: 48f43240af39ccd3712fb2919f02ea0c
+      size: 3291
+    - path: src/make_windows.py
+      hash: md5
+      md5: 663db78b6b84443d817feafe4fd3a284
+      size: 6741
+    params:
+      params.yaml:
+        seed: 42
+        split:
+          val_frac: 0.15
+          test_frac: 0.15
+          subject_map: {}
+        windows:
+          frame_stride: 1
+          size: 30
+          step: 10
+          max_frame_gap: 5
+          min_label_purity: 0.6
+    outs:
+    - path: data/processed/windows.npz
+      hash: md5
+      md5: caa47b75f169e2d95c4f29eb8c497343
+      size: 524791
+    - path: data/processed/windows_meta.csv
+      hash: md5
+      md5: 34dec7161df7988c1952e43b63f91f3f
+      size: 33006
+    - path: reports/split_report.json
+      hash: md5
+      md5: 514677ef68e04585eefc53b1e88b5a20
+      size: 1777
+  train:
+    cmd: python -m src.train
+    deps:
+    - path: data/processed/windows.npz
+      hash: md5
+      md5: caa47b75f169e2d95c4f29eb8c497343
+      size: 524791
+    - path: data/processed/windows_meta.csv
+      hash: md5
+      md5: 34dec7161df7988c1952e43b63f91f3f
+      size: 33006
+    - path: src/common.py
+      hash: md5
+      md5: 48f43240af39ccd3712fb2919f02ea0c
+      size: 3291
+    - path: src/train.py
+      hash: md5
+      md5: ad38bee71df98c795263b1c5cb2e22b4
+      size: 9979
+    params:
+      params.yaml:
+        mlflow:
+          experiment_name: gazeguard-milestone1
+          registered_model_name: gazeguard-temporal-classifier
+          register_policy: best_overall
+        seed: 42
+        train:
+          epochs: 40
+          batch_size: 32
+          lr: 0.001
+          conv_channels: 32
+          gru_hidden: 64
+          patience: 8
+          rf_trees: 200
+    outs:
+    - path: metrics.json
+      hash: md5
+      md5: 1ff1fbd01670573c7c552101786f3dfe
+      size: 577
+    - path: reports/confusion_matrices
+      hash: md5
+      md5: cea04793eb280bb4342f029029744193.dir
+      size: 63335
+      nfiles: 6

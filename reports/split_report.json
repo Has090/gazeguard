@@ -1,0 +1,96 @@
+{
+  "leakage_check": "passed",
+  "split_unit": "scenario",
+  "n_windows": {
+    "train": 565,
+    "val": 67,
+    "test": 91
+  },
+  "groups": {
+    "train": [
+      "Scenario 1",
+      "Scenario 11",
+      "Scenario 12",
+      "Scenario 13",
+      "Scenario 14",
+      "Scenario 16",
+      "Scenario 17",
+      "Scenario 18",
+      "Scenario 2",
+      "Scenario 21",
+      "Scenario 22",
+      "Scenario 23",
+      "Scenario 27",
+      "Scenario 28",
+      "Scenario 29",
+      "Scenario 30",
+      "Scenario 31",
+      "Scenario 32",
+      "Scenario 33",
+      "Scenario 36",
+      "Scenario 39",
+      "Scenario 4",
+      "Scenario 40",
+      "Scenario 42",
+      "Scenario 44",
+      "Scenario 45",
+      "Scenario 48",
+      "Scenario 49",
+      "Scenario 5",
+      "Scenario 50",
+      "Scenario 53",
+      "Scenario 56",
+      "Scenario 59",
+      "Scenario 60",
+      "Scenario 7",
+      "Scenario 8"
+    ],
+    "val": [
+      "Scenario 15",
+      "Scenario 19",
+      "Scenario 26",
+      "Scenario 3",
+      "Scenario 34",
+      "Scenario 37",
+      "Scenario 43",
+      "Scenario 54",
+      "Scenario 57",
+      "Scenario 6"
+    ],
+    "test": [
+      "Scenario 10",
+      "Scenario 20",
+      "Scenario 24",
+      "Scenario 25",
+      "Scenario 35",
+      "Scenario 38",
+      "Scenario 46",
+      "Scenario 51",
+      "Scenario 55",
+      "Scenario 9"
+    ]
+  },
+  "class_counts": {
+    "train": {
+      "0": 102,
+      "1": 105,
+      "2": 79,
+      "3": 144,
+      "4": 135
+    },
+    "val": {
+      "0": 8,
+      "1": 5,
+      "2": 15,
+      "3": 15,
+      "4": 24
+    },
+    "test": {
+      "0": 32,
+      "1": 7,
+      "2": 37,
+      "3": 8,
+      "4": 7
+    }
+  }
+}

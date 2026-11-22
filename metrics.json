@@ -1,0 +1,17 @@
+{
+  "best_model": "random_forest",
+  "registered_model": "gazeguard-temporal-classifier",
+  "registered_version": "1",
+  "majority_class.val_accuracy": 0.2239,
+  "majority_class.val_macro_f1": 0.0732,
+  "majority_class.test_accuracy": 0.0879,
+  "majority_class.test_macro_f1": 0.0323,
+  "random_forest.val_accuracy": 1.0,
+  "random_forest.val_macro_f1": 1.0,
+  "random_forest.test_accuracy": 1.0,
+  "random_forest.test_macro_f1": 1.0,
+  "cnn_gru.val_accuracy": 1.0,
+  "cnn_gru.val_macro_f1": 1.0,
+  "cnn_gru.test_accuracy": 1.0,
+  "cnn_gru.test_macro_f1": 1.0
+}

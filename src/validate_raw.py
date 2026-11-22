@@ -5,7 +5,7 @@ from pathlib import Path
 from PIL import Image
 
 from src.common import (ROOT, list_images, list_scenarios, load_params,
-                        parse_frame_idx, read_yolo_annotation, write_json)
+                        parse_frame_idx, read_yolo_annotation, sequence_id, write_json)
 
 
 def validate_raw(raw_dir, params):
@@ -17,18 +17,19 @@ def validate_raw(raw_dir, params):
 
     for scen in scenarios:
         images = list_images(scen, data_p["image_exts"])
-        seen_idx = set()
+        seen_idx = set()  # (recording prefix, frame number): each recording is numbered separately
         for img in images:
             n_images += 1
             idx = parse_frame_idx(img.stem)
+            key = (sequence_id(img.stem), idx)
             if idx is None:
                 n_bad_frame += 1
                 errors.append(f"{scen.name}/{img.name}: file name does not end with a frame number")
-            elif idx in seen_idx:
+            elif key in seen_idx:
                 n_dup += 1
-                errors.append(f"{scen.name}/{img.name}: duplicate frame number {idx}")
+                errors.append(f"{scen.name}/{img.name}: duplicate frame number {idx} in '{key[0]}'")
             else:
-                seen_idx.add(idx)
+                seen_idx.add(key)
             try:
                 with Image.open(img) as im:
                     im.verify()

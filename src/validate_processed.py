@@ -7,24 +7,26 @@ import pandera.pandas as pa
 from src.common import FEATURES, ROOT, load_params, write_json
 
 
-def build_schema():
+def build_schema(with_sequence=True):
     num = lambda lo, hi: pa.Column(float, pa.Check.in_range(lo, hi), nullable=False, coerce=True)
-    return pa.DataFrameSchema(
-        {
-            "scenario": pa.Column(str, nullable=False),
-            "frame_idx": pa.Column(int, pa.Check.ge(0), nullable=False, coerce=True),
-            "image": pa.Column(str, nullable=False),
-            "label": pa.Column(float, pa.Check.ge(0), nullable=True, coerce=True),
-            "face_present": pa.Column(int, pa.Check.isin([0, 1]), nullable=False, coerce=True),
-            "yaw": num(-90, 90), "pitch": num(-90, 90), "roll": num(-90, 90),
-            "nose_x": num(-0.5, 1.5), "nose_y": num(-0.5, 1.5),
-            "iris_l_x": num(-3, 3), "iris_l_y": num(-3, 3),
-            "iris_r_x": num(-3, 3), "iris_r_y": num(-3, 3),
-            "ear": num(0, 2), "mouth_open": num(0, 5),
-        },
-        strict=False,
-        unique=["scenario", "frame_idx"],
-    )
+    columns = {
+        "scenario": pa.Column(str, nullable=False),
+        "frame_idx": pa.Column(int, pa.Check.ge(0), nullable=False, coerce=True),
+        "image": pa.Column(str, nullable=False),
+        "label": pa.Column(float, pa.Check.ge(0), nullable=True, coerce=True),
+        "face_present": pa.Column(int, pa.Check.isin([0, 1]), nullable=False, coerce=True),
+        "yaw": num(-90, 90), "pitch": num(-90, 90), "roll": num(-90, 90),
+        "nose_x": num(-0.5, 1.5), "nose_y": num(-0.5, 1.5),
+        "iris_l_x": num(-3, 3), "iris_l_y": num(-3, 3),
+        "iris_r_x": num(-3, 3), "iris_r_y": num(-3, 3),
+        "ear": num(0, 2), "mouth_open": num(0, 5),
+    }
+    unique = ["scenario", "frame_idx"]
+    if with_sequence:
+        # every recording (file-name prefix) inside a scenario is numbered separately
+        columns["sequence"] = pa.Column(str, nullable=False)
+        unique = ["scenario", "sequence", "frame_idx"]
+    return pa.DataFrameSchema(columns, strict=False, unique=unique)
 
 
 def validate_features(df, params):
@@ -35,7 +37,7 @@ def validate_features(df, params):
         failures.append(f"missing feature columns: {missing_cols}")
     else:
         try:
-            build_schema().validate(df, lazy=True)
+            build_schema(with_sequence="sequence" in df.columns).validate(df, lazy=True)
         except pa.errors.SchemaErrors as exc:
             failures.append(f"schema violations: {len(exc.failure_cases)} cases")
             failures.extend(exc.failure_cases.head(5).astype(str).agg(" | ".join, axis=1).tolist())

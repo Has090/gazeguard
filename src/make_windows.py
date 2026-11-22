@@ -2,6 +2,8 @@
 
 Frames of the same scenario (or subject, if params.split.subject_map is set) never appear
 in more than one of train / val / test. Standardisation statistics come from train only.
+Each recording (file-name prefix) inside a scenario is windowed on its own, so a window
+never mixes frames from two different recordings.
 """
 import sys
 from collections import Counter
@@ -15,8 +17,10 @@ from src.common import (FEATURES, ROOT, WINDOW_FEATURES, load_params, set_seed, 
 def build_windows(df, size, step, stride, max_gap, min_purity):
     """Return X (N,size,F), y (N,), meta DataFrame. Windows never cross a frame gap."""
     X, y, meta = [], [], []
+    if "sequence" not in df.columns:   # older tables / unit tests: one sequence per scenario
+        df = df.assign(sequence="")
     df = df[df["label"].notna()]
-    for scen, g in df.groupby("scenario", sort=True):
+    for (scen, seq), g in df.groupby(["scenario", "sequence"], sort=True):
         g = g.sort_values("frame_idx").iloc[::stride]
         idx = g["frame_idx"].to_numpy()
         if len(idx) < size:
@@ -37,11 +41,11 @@ def build_windows(df, size, step, stride, max_gap, min_purity):
                 vel = np.vstack([np.zeros((1, 2)), np.diff(w[:, [1, 2]], axis=0)])  # d_yaw, d_pitch
                 X.append(np.hstack([w, vel]))
                 y.append(int(vals[counts.argmax()]))
-                meta.append({"scenario": scen, "start_frame": int(frames[s]),
+                meta.append({"scenario": scen, "sequence": seq, "start_frame": int(frames[s]),
                              "end_frame": int(frames[s + size - 1])})
     if not X:
         return np.zeros((0, size, len(WINDOW_FEATURES))), np.zeros(0, dtype=int), pd.DataFrame(
-            columns=["scenario", "start_frame", "end_frame"])
+            columns=["scenario", "sequence", "start_frame", "end_frame"])
     return np.stack(X), np.array(y), pd.DataFrame(meta)
 
 
@@ -89,6 +93,10 @@ def main():
     set_seed(params["seed"])
     w_p, s_p = params["windows"], params["split"]
     df = pd.read_csv(ROOT / "data" / "processed" / "features.csv")
+    if "sequence" not in df.columns:
+        print("[make_windows] features.csv has no 'sequence' column - "
+              "update src/extract_features.py and re-run the extract_features stage")
+        sys.exit(1)
     X, y, meta = build_windows(df, w_p["size"], w_p["step"], w_p["frame_stride"],
                                w_p["max_frame_gap"], w_p["min_label_purity"])
     if len(X) == 0:

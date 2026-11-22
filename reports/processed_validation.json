@@ -1,0 +1,18 @@
+{
+  "passed": true,
+  "failures": [],
+  "n_rows": 15051,
+  "n_scenarios": 60,
+  "face_detect_rate": 0.9254,
+  "labeled_rate": 1.0,
+  "n_missing_values": 0,
+  "label_counts": {
+    "0": 2948,
+    "1": 2531,
+    "2": 2498,
+    "3": 3662,
+    "4": 3409,
+    "7": 1,
+    "8": 2
+  }
+}
