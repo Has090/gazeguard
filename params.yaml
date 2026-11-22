@@ -1,0 +1,55 @@
+seed: 42
+
+data:
+  raw_dir: data/raw
+  image_exts: [".jpg", ".jpeg", ".png"]
+  num_classes: 13          # annotation class ids must be 0..num_classes-1
+
+validation:
+  min_scenarios: 3
+  max_missing_annotation_rate: 0.05
+  max_corrupt_image_rate: 0.0     # ANY unreadable image stops the pipeline (raise only on purpose)
+  min_face_detect_rate: 0.50     # checked on the processed feature table
+  min_labeled_rate: 0.90         # share of frames that must have a label
+
+extract:
+  max_num_faces: 1
+  min_detection_confidence: 0.5
+
+labels:
+  # How each frame gets its label:
+  #   annotation_largest_box : class id of the largest box in the frame's .txt
+  #                            (the head box) -- default, CHECK this on your data
+  #   folder_map             : label taken from folder_map[scenario_folder_name]
+  source: annotation_largest_box
+  folder_map: {}
+
+windows:
+  frame_stride: 1      # keep every Nth frame (e.g. 3 if the source video was 30 fps -> 10 fps)
+  size: 30             # frames per window
+  step: 10             # window hop in frames
+  max_frame_gap: 5     # break a sequence if consecutive kept frames are further apart than this
+  min_label_purity: 0.6
+
+split:
+  val_frac: 0.15
+  test_frac: 0.15
+  # optional: map scenario -> subject so the split is subject-disjoint
+  # (if empty, the split is scenario-disjoint). Example: {S1: A, S2: A, S3: B}
+  subject_map: {}
+
+train:
+  epochs: 40
+  batch_size: 32
+  lr: 0.001
+  conv_channels: 32
+  gru_hidden: 64
+  patience: 8
+  rf_trees: 200
+
+mlflow:
+  experiment_name: gazeguard-milestone1
+  registered_model_name: gazeguard-temporal-classifier
+  # best_overall: register the candidate with the best validation macro-F1
+  # primary      : always register the 1D-CNN + GRU
+  register_policy: best_overall

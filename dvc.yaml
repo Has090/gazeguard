@@ -1,0 +1,75 @@
+stages:
+  validate_raw:
+    cmd: python -m src.validate_raw
+    deps:
+      - data/raw
+      - src/validate_raw.py
+      - src/common.py
+    params:
+      - data
+      - validation
+    metrics:
+      - reports/raw_validation.json:
+          cache: false
+
+  extract_features:
+    cmd: python -m src.extract_features
+    deps:
+      - data/raw
+      - reports/raw_validation.json
+      - src/extract_features.py
+      - src/features.py
+      - src/common.py
+    params:
+      - data
+      - extract
+      - labels
+    outs:
+      - data/processed/features.csv
+
+  validate_processed:
+    cmd: python -m src.validate_processed
+    deps:
+      - data/processed/features.csv
+      - src/validate_processed.py
+      - src/common.py
+    params:
+      - validation
+    metrics:
+      - reports/processed_validation.json:
+          cache: false
+
+  make_windows:
+    cmd: python -m src.make_windows
+    deps:
+      - data/processed/features.csv
+      - reports/processed_validation.json
+      - src/make_windows.py
+      - src/common.py
+    params:
+      - seed
+      - windows
+      - split
+    outs:
+      - data/processed/windows.npz
+      - data/processed/windows_meta.csv
+    metrics:
+      - reports/split_report.json:
+          cache: false
+
+  train:
+    cmd: python -m src.train
+    deps:
+      - data/processed/windows.npz
+      - data/processed/windows_meta.csv
+      - src/train.py
+      - src/common.py
+    params:
+      - seed
+      - train
+      - mlflow
+    metrics:
+      - metrics.json:
+          cache: false
+    outs:
+      - reports/confusion_matrices
